@@ -4,7 +4,7 @@ const hostname = "127.0.0.1";
 const port = 3001;
 
 const users = [
-{ name: "Rokas", password: "rokas123" },
+{ name: "Julija", password: "julija123" },
 { name: "Tomas", password: "tomas123" },
 ];
 

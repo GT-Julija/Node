@@ -1,0 +1,7 @@
+{
+    "title": "MongoDB test",
+    "version": "0.1",
+    "scripts": {
+      "start": "nodemon index.js"
+    }
+  }
