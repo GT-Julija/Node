@@ -1,72 +1,70 @@
-const express = require("express");
-const cors = require("cors");
-const { MongoClient } = require("mongodb");
-require("dotenv").config();
+let orderSelection = "asc";
+let petSelection = ["dog", "cat", "bunny"];
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+function dataDisplay(data) {
+  const table = document.querySelector("tbody");
+  table.innerHTML = "";
 
-const PORT = process.env.PORT || 8080;
-const URI = `mongodb+srv://admin:${process.env.PASSWORD}@cluster0.k6cb5xa.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(URI);
+  data.forEach((pet) => {
+    const tr = table.insertRow();
 
-app.get("/pets", async (req, res) => {
-  try {
-    const con = await client.connect();
-    const data = await con.db("demo2").collection("pets").find().toArray();
-    await con.close();
-    return res.send(data);
-  } catch (err) {
-    res.status(500).send({ err });
+    const td1 = tr.insertCell();
+    td1.textContent = pet.name;
+
+    const td2 = tr.insertCell();
+    td2.textContent = pet.type;
+
+    const td3 = tr.insertCell();
+    td3.textContent = pet.age;
+  });
+}
+
+function getData() {
+  fetch(
+    `http://localhost:3000/pets/${petSelection.join(",")}/${orderSelection}`
+  )
+    .then((res) => res.json())
+    .then((responce) => dataDisplay(responce));
+}
+
+getData();
+
+fetch("http://localhost:3000/pets")
+  .then((resp) => resp.json())
+  .then((response) => dataDisplay(response))
+  .catch((err) => console.error(err));
+
+document.querySelector("#age").addEventListener("click", (e) => {
+  const text = e.target.textContent;
+  if (text.includes("Asc")) {
+    e.target.textContent = text.replace("Asc", "Dsc");
+    fetch("http://localhost:3000/pets/dsc")
+    .then((resp) => resp.json())
+    .then((response) => dataDisplay(response));
+    orderSelection = "dsc";
+  } else {
+    e.target.textContent = text.replace("Dsc", "Asc");
+    fetch("http://localhost:3000/pets/asc");
+    .then((resp) => resp.json())
+    .then((response) => dataDisplay(response));
+    orderSelection = "asc";
   }
+
+  getData();
 });
 
-app.post("/pets", async (req, res) => {
-  try {
-    const con = await client.connect();
-    const dbRes = await con.db("demo2").collection("pets").insertOne({
-      name: req.body.name,
-      type: req.body.type,
-      age: req.body.age,
-    });
-    await con.close();
-    return res.send(dbRes);
-  } catch (err) {
-    res.status(500).send({ err });
-  }
-});
+document.querySelectorAll("button").forEach((button) => {
+  button.addEventListener("click", (e) => {
+    e.target.classList.toggle("selected");
+    const petClicked = e.target.textContent.toLowerCase();
 
-app.get("/pets/:type", async (req, res) => {
-  try {
-    const con = await client.connect();
-    const data = await con
-      .db("demo2")
-      .collection("pets")
-      .find({ type: req.params.type })
-      .toArray();
-    await con.close();
-    return res.send(data);
-  } catch (err) {
-    res.status(500).send({ err });
-  }
-});
-
-app.get("/pets/age/byoldest", async (req, res) => {
-  try {
-    const con = await client.connect();
-    const data = await con
-      .db("demo2")
-      .collection("pets")
-      .sort({ age: -1 })
-      .toArray();
-    await con.close();
-    return res.send(data);
-  } catch (err) {
-    res.status(500).send({ err });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    if (petSelection.includes(petClicked)) {
+      petSelection = petSelection.filter(
+        (petStored) => petStored !== petClicked
+      );
+    } else {
+      petSelection.push(petClicked);
+    }
+    getData();
+  });
 });
