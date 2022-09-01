@@ -1,5 +1,5 @@
 {
-    "title": "Ecommerce MySql",
+    "title": "Cars MySql",
     "version": "0.1",
     "scripts": {
       "start": "nodemon index.js"
